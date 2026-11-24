@@ -2,6 +2,11 @@ const menuToggle = document.querySelector(".menu-toggle");
 const navigation = document.querySelector(".main-nav");
 const searchForm = document.querySelector("#trip-search");
 const toast = document.querySelector("#toast");
+const packageDialog = document.querySelector("#package-dialog");
+const dialogTitle = document.querySelector("#package-dialog-title");
+const dialogDescription = document.querySelector("#package-dialog-description");
+const dialogPrice = document.querySelector("#package-dialog-price");
+const dialogClose = document.querySelector(".dialog-close");
 let toastTimer;
 
 function showToast(message) {
@@ -11,6 +16,12 @@ function showToast(message) {
   toastTimer = window.setTimeout(() => toast.classList.remove("show"), 3200);
 }
 
+function closeNavigation(restoreFocus = false) {
+  navigation.classList.remove("open");
+  menuToggle.setAttribute("aria-expanded", "false");
+  if (restoreFocus) menuToggle.focus();
+}
+
 menuToggle.addEventListener("click", () => {
   const isOpen = menuToggle.getAttribute("aria-expanded") === "true";
   menuToggle.setAttribute("aria-expanded", String(!isOpen));
@@ -18,10 +29,17 @@ menuToggle.addEventListener("click", () => {
 });
 
 navigation.querySelectorAll("a").forEach((link) => {
-  link.addEventListener("click", () => {
-    navigation.classList.remove("open");
-    menuToggle.setAttribute("aria-expanded", "false");
-  });
+  link.addEventListener("click", () => closeNavigation());
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape") return;
+  if (packageDialog.open) {
+    event.preventDefault();
+    packageDialog.close();
+    return;
+  }
+  if (menuToggle.getAttribute("aria-expanded") === "true") closeNavigation(true);
 });
 
 searchForm.addEventListener("submit", (event) => {
@@ -37,12 +55,15 @@ searchForm.addEventListener("submit", (event) => {
 
 document.querySelectorAll(".package-button").forEach((button) => {
   button.addEventListener("click", () => {
-    showToast(`${button.dataset.package} is ready to explore.`);
+    dialogTitle.textContent = button.dataset.package;
+    dialogDescription.textContent = button.dataset.description;
+    dialogPrice.textContent = button.dataset.price;
+    packageDialog.showModal();
   });
 });
 
-document.querySelectorAll(".footer-social a, .footer-bottom a").forEach((link) => {
-  link.addEventListener("click", (event) => {
-    event.preventDefault();
-  });
+dialogClose.addEventListener("click", () => packageDialog.close());
+
+packageDialog.addEventListener("click", (event) => {
+  if (event.target === packageDialog) packageDialog.close();
 });
